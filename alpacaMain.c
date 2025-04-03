@@ -71,17 +71,23 @@ int main() {
                 } else {
                     printf("End of list of models.\n\n");
                 }
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
 
             case 2:
                 // This function creates a file, see alpacaLocal.c for definition and error messages.
                 createDir(dirArr);
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
 
             case 3:
                 // This function prints all indexed directories, see alpacaLocal.c for definition.
                 // Function return 0 after successful execution. Returns 1 if no indexed directories exist.
                 listDir(dirArr);
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
 
             // This allows a user to specify a directory, and a file within said directory to return the title of.
@@ -97,11 +103,15 @@ int main() {
                         listFile(dirArr, dirSelect);
                     }
                 }
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
 
             // This function prints the contents of a user specified context file.
             case 5:
                 printFileContent(dirArr);
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
                 
             // Case 6 is currently disabled until the function can be properly implemented, this is included here for reference purposes.
@@ -126,6 +136,8 @@ int main() {
             default:
                 // Input validation.
                 printf("Please enter a valid input according to the menu options.\n\n");
+                printf("Press any button to continue...\n");
+                getchar();
                 break;
         }
 
