@@ -79,21 +79,22 @@ int indexDir(struct dirStruct dirArr[MAX_DIR]) {
     }
 
     int dirIndex = 0;
-    char prevDir[] = {'.', '.'}; // This would be the directory name of the preceding directory.
 
     // Reads all files/directories until there are none left.
     while ((dirent = readdir(dptr)) != NULL) {
         if (stat(dirent->d_name, &st) == 0) {
             // We use stat functions to ensure only directories will be indexed.
-            if (S_ISDIR(st.st_mode)) {
-                // This prevents the current directory and the previous directory from being indexed.
-                if (dirent->d_name[0] != '.' && strcmp(dirent->d_name, prevDir) != 0) {
-                    // We -1 from the amount of memory allocated or the title to preserve the null terminator.
-                    strncpy(dirArr[dirIndex].dirTitle, dirent->d_name, sizeof(dirArr[dirIndex].dirTitle) - 1);
-                    // The function increments dirIndex to move to the next directory in the directory struct.
-                    dirIndex++;
-                }
+            if (!S_ISDIR(st.st_mode)) {
+                continue;
             }
+            // This prevents the current directory and the previous directory from being indexed.
+            if (strcmp(dirent->d_name, ".") == 0 || strcmp(dirent->d_name, "..") == 0) {
+                continue;
+            }
+            // We -1 from the amount of memory allocated or the title to preserve the null terminator.
+            strncpy(dirArr[dirIndex].dirTitle, dirent->d_name, sizeof(dirArr[dirIndex].dirTitle) - 1);
+                    // The function increments dirIndex to move to the next directory in the directory struct.
+            dirIndex++;
 
         // The function prints an error message and return 1 if there was an error with stat() that caused it to return non-0.
         // Otherwise the function returns 0 upon successful execution.
