@@ -67,6 +67,14 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     // Ensure null termination just in case buffer overflowed
     fullResponse[MAX_RESPONSE - 1] = '\0';
 
+    // Trim trailing whitespace (spaces, newlines, carriage returns)
+    int len = strlen(fullResponse);
+    while (len > 0 && (fullResponse[len - 1] == ' ' || fullResponse[len - 1] == '\n' || fullResponse[len - 1] == '\r')) 
+    {
+    fullResponse[--len] = '\0';
+    }
+
+
     pclose(fp);
 
     FILE *history = fopen(filePath, "w");
