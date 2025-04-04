@@ -1,4 +1,4 @@
-// alpacaInteraction.c - Updated with file selection in directory for upload
+// alpacaInteraction.c - with model list using popen()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,11 +11,22 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     char modelName[64];
     char userPrompt[MAX_CONTENT_CHAR];
     char command[MAX_CMD];
-    char buffer[4000];
+    char buffer[512];
     char fullResponse[MAX_RESPONSE] = {0};
     char filePath[2 * MAX_TITLE_CHAR + 2];
 
-    printf("Enter the name of the model to use (e.g., mistral, llama3): ");
+    printf("\n--- List of Available Models ---\n");
+    FILE *modelList = popen("ollama list", "r");
+    if (modelList) {
+        char line[256];
+        while (fgets(line, sizeof(line), modelList)) {
+            printf("%s", line);
+        }
+        pclose(modelList);
+    } else {
+        printf("(Failed to list models — is Ollama running?)\n");
+    }
+    printf("Enter the exact name of the mode to use: ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
 
@@ -63,18 +74,11 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
         printf("%s", buffer);
         strncat(fullResponse, buffer, sizeof(fullResponse) - strlen(fullResponse) - 1);
     }
-
-    // Ensure null termination just in case buffer overflowed
     fullResponse[MAX_RESPONSE - 1] = '\0';
-
-    // Trim trailing whitespace (spaces, newlines, carriage returns)
     int len = strlen(fullResponse);
-    while (len > 0 && (fullResponse[len - 1] == ' ' || fullResponse[len - 1] == '\n' || fullResponse[len - 1] == '\r')) 
-    {
-    fullResponse[--len] = '\0';
+    while (len > 0 && (fullResponse[len - 1] == ' ' || fullResponse[len - 1] == '\n' || fullResponse[len - 1] == '\r')) {
+        fullResponse[--len] = '\0';
     }
-
-
     pclose(fp);
 
     FILE *history = fopen(filePath, "w");
@@ -98,6 +102,17 @@ void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
     char buffer[512];
     char command[MAX_CMD];
 
+    printf("\n--- List of Available Models ---\n");
+    FILE *modelList = popen("ollama list", "r");
+    if (modelList) {
+        char line[256];
+        while (fgets(line, sizeof(line), modelList)) {
+            printf("%s", line);
+        }
+        pclose(modelList);
+    } else {
+        printf("(Failed to list models — is Ollama running?)\n");
+    }
     printf("Enter the name of the model to use (e.g., mistral, llama3): ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
