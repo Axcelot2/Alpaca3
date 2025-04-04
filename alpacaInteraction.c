@@ -1,27 +1,50 @@
-// alpacaInteraction.c - Modular Ollama interaction logic for Alpaca
+// alpacaInteraction.c - Updated with file selection in directory for upload
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "alpacaLocal.h"
+#include "alpacaInteraction.h"
 
 #define MAX_CMD 1024
 
-// This function allows a user to choose a model, chat, and append the prompt/response to a specified text file.
-void chatWithModelToFile() {
+void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     char modelName[64];
-    char historyFile[256];
     char userPrompt[MAX_CONTENT_CHAR];
     char command[MAX_CMD];
     char buffer[512];
     char fullResponse[MAX_RESPONSE] = {0};
+    char filePath[2 * MAX_TITLE_CHAR + 2];
 
     printf("Enter the name of the model to use (e.g., mistral, llama3): ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
 
-    printf("Enter the name of the .txt file to use as chat history: ");
-    fgets(historyFile, sizeof(historyFile), stdin);
-    historyFile[strcspn(historyFile, "\n")] = 0;
+    if (listDir(dirArr) != 0) {
+        printf("No directories exist. Please create one first.\n");
+        return;
+    }
+    int dirIndex;
+    printf("Select a directory to save the chat file: ");
+    scanf("%d", &dirIndex);
+    getchar();
+    dirIndex--;
+    if (dirIndex < 0 || dirIndex >= MAX_DIR || dirArr[dirIndex].dirTitle[0] == '\0') {
+        printf("Invalid directory selection.\n");
+        return;
+    }
+
+    int fileIndex;
+    for (fileIndex = 0; fileIndex < MAX_FILES; fileIndex++) {
+        if (dirArr[dirIndex].fileTitle[fileIndex][0] == '\0') {
+            break;
+        }
+    }
+
+    printf("Enter the name of the file to save this conversation: ");
+    fgets(dirArr[dirIndex].fileTitle[fileIndex], sizeof(dirArr[dirIndex].fileTitle[fileIndex]), stdin);
+    dirArr[dirIndex].fileTitle[fileIndex][strcspn(dirArr[dirIndex].fileTitle[fileIndex], "\n")] = 0;
+
+    snprintf(filePath, sizeof(filePath), "%s/%s", dirArr[dirIndex].dirTitle, dirArr[dirIndex].fileTitle[fileIndex]);
 
     printf("Enter your prompt for %s:\n", modelName);
     fgets(userPrompt, sizeof(userPrompt), stdin);
@@ -42,9 +65,9 @@ void chatWithModelToFile() {
     }
     pclose(fp);
 
-    FILE *history = fopen(historyFile, "a");
+    FILE *history = fopen(filePath, "w");
     if (!history) {
-        perror("Failed to open history file");
+        perror("Failed to open chat file");
         return;
     }
     fprintf(history, "Model: %s\n", modelName);
@@ -52,12 +75,13 @@ void chatWithModelToFile() {
     fprintf(history, "Bot:  %s\n", fullResponse);
     fprintf(history, "------------------------\n");
     fclose(history);
+
+    printf("Conversation saved to %s.\n", filePath);
 }
 
-// This function uploads a text file to Ollama using a selected model.
-void uploadFileToOllama() {
+void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
     char modelName[64];
-    char filename[256];
+    char filePath[2 * MAX_TITLE_CHAR + 2];
     char fileContent[MAX_RESPONSE] = {0};
     char buffer[512];
     char command[MAX_CMD];
@@ -66,11 +90,37 @@ void uploadFileToOllama() {
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
 
-    printf("Enter the name of the .txt file to upload to Ollama: ");
-    fgets(filename, sizeof(filename), stdin);
-    filename[strcspn(filename, "\n")] = 0;
+    if (listDir(dirArr) != 0) {
+        printf("No directories exist. Please create one first.\n");
+        return;
+    }
+    int dirIndex;
+    printf("Select a directory to choose the .txt file from: ");
+    scanf("%d", &dirIndex);
+    getchar();
+    dirIndex--;
+    if (dirIndex < 0 || dirIndex >= MAX_DIR || dirArr[dirIndex].dirTitle[0] == '\0') {
+        printf("Invalid directory selection.\n");
+        return;
+    }
 
-    FILE *f = fopen(filename, "r");
+    if (listFile(dirArr, dirIndex) != 0) {
+        printf("No files exist in this directory.\n");
+        return;
+    }
+    int fileIndex;
+    printf("Select a file to upload: ");
+    scanf("%d", &fileIndex);
+    getchar();
+    fileIndex--;
+    if (fileIndex < 0 || fileIndex >= MAX_FILES || dirArr[dirIndex].fileTitle[fileIndex][0] == '\0') {
+        printf("Invalid file selection.\n");
+        return;
+    }
+
+    snprintf(filePath, sizeof(filePath), "%s/%s", dirArr[dirIndex].dirTitle, dirArr[dirIndex].fileTitle[fileIndex]);
+
+    FILE *f = fopen(filePath, "r");
     if (!f) {
         perror("Failed to open file");
         return;
@@ -88,6 +138,8 @@ void uploadFileToOllama() {
     }
 
     snprintf(command, sizeof(command), "ollama run %s \"%s\"", modelName, fileContent);
+    printf("\nUsing file: %s\n\n", filePath);
+
     FILE *fp = popen(command, "r");
     if (!fp) {
         perror("popen failed");

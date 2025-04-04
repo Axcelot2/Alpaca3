@@ -1,1 +1,23 @@
-UserDirectory
+# Ignore all .txt files
+*.txt
+
+# Ignore object files
+*.o
+
+# Ignore executables (Windows and Unix)
+*.exe
+alpaca
+alpacaMain
+alpacaInteraction
+alpacaLocal
+
+# Ignore folders (if you have build or bin directories)
+build/
+bin/
+
+# Ignore VSCode settings (optional)
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

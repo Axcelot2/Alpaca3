@@ -120,13 +120,13 @@ int main() {
 
             
             case 6:
-                chatWithModelToFile();  
+                chatWithModelToFile(dirArr);  
                 printf("Press any button to continue...\n");
                 getchar();
                 break;
 
             case 7:
-                uploadFileToOllama();  // NEW
+                uploadFileToOllama(dirArr);  
                 printf("Press any button to continue...\n");
                 getchar();
                 break;
