@@ -15,6 +15,9 @@ these files and their functions are INTENTIONALLY EXCLUDED from compiling until 
 #include <stdlib.h>
 // Header file alpacaLocal.h contains declaration of all functions that interact with local directories/files.
 #include "alpacaLocal.h"
+// Header file to include functionalities that communicate with Ollama                                                                                              
+#include "alpacaInteraction.h"
+
 
 // The main program uses functions defined in alpacaLocal.c.
 int main() {
@@ -56,7 +59,8 @@ int main() {
         printf("3. List Categories\n");
         printf("4. List Context Files\n");
         printf("5. Print Context File\n");
-        printf("6. Chat with Model\n");
+        printf("6. Chat with Model and Save to File\n");
+        printf("7. Upload a Text File to Ollama\n");
         printf("0. Exit Alpaca\n\n");
         printf("Enter your selection: ");
         scanf("%d", &whatDo);
@@ -110,6 +114,19 @@ int main() {
             // This function prints the contents of a user specified context file.
             case 5:
                 printFileContent(dirArr);
+                printf("Press any button to continue...\n");
+                getchar();
+                break;
+
+            
+            case 6:
+                chatWithModelToFile();  
+                printf("Press any button to continue...\n");
+                getchar();
+                break;
+
+            case 7:
+                uploadFileToOllama();  // NEW
                 printf("Press any button to continue...\n");
                 getchar();
                 break;
