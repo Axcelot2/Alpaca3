@@ -118,33 +118,19 @@ int main() {
                 getchar();
                 break;
 
-            
+            // This function will prompt the user on which model they want to chat with and also ask which .txt file the user wants to save the conversation
             case 6:
                 chatWithModelToFile(dirArr);  
                 printf("Press any button to continue...\n");
                 getchar();
                 break;
-
+            // This function will upload an existing .txt file into a desired model 
             case 7:
                 uploadFileToOllama(dirArr);  
                 printf("Press any button to continue...\n");
                 getchar();
                 break;
                 
-            // Case 6 is currently disabled until the function can be properly implemented, this is included here for reference purposes.
-            // case 6:
-            //     if (system("ollama list") != 0) {
-            //         printf("No models found.\n");
-            //         break;
-            //     } else {
-            //         char modelName[MAX_MODEL_NAME];
-            //         printf("Type in the selected model name: ");
-            //         fgets(modelName, sizeof(modelName), stdin);
-            //         if (chatWithOllama(modelName, dirArr) == 1) {
-            //             break;
-            //         }
-            //     }
-            //     break;
 
             case 0:
                 printf("Exiting Program.\n\n");
