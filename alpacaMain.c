@@ -1,12 +1,11 @@
-// Xi Ting Yan and Ali Kutay Dastan wrote this program.
-/* Ali Kutay Dastan wrote all functions in interaction.c and interaction.h files included in this submission. Currently, due to difficulties with implementation
-these files and their functions are INTENTIONALLY EXCLUDED from compiling until further testing can be done. */
+// Xi Ting Yan and Ali Kutay Dastan wrote the main program.
+// Ali Kutay Dastan wrote all functions in alpacaInteraction.c.
 // Xi Ting Yan wrote all functions in alpacaLocal.c except for the printFileContent() function.
 // Tahmeed Ahmed is responsible for debugging and error handling.
 // Ashkan Sharifi implemented the function that permits the printing of text from a selected context file. (printFileContent())
-// This program takes user input to create directories with the specified titles.
-// Compile alpacaMain.c with alpacaLocal.c in the same directory as alpacaLocal.h and dirStruct.h.
-// The final goal of project Alpaca is to implement data streaming from Ollama into this program to create local files that store Ollama context.
+// This program allows a user to interact with an LLM via Ollama and preserve context files.
+// It also allows the user to manage context files.
+// Compile alpacaMain.c, alpacaLocal.c, and alpacaInteraction.c in the same directory as alpacaLocal.h, dirStruct.h, and alpacaInteraction.h.
 // Ollama is an open-source software that allows local running of LLMs.
 
 // DO NOT COMPILE WITH interaction.c, the interaction.c and interaction.h files. These files are simply submitted as a WIP

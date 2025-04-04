@@ -143,8 +143,11 @@ void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
     if (!f) { perror("Failed to open file"); return; }
 
     while (fgets(buffer, sizeof(buffer), f)) {
-        strncat(fileContent, buffer, sizeof(fileContent) - strlen(fileContent) - 1);
+        buffer[strcspn(buffer, "\r\n")] = '\0'; // Strip real newlines
+        strncat(fileContent, buffer, sizeof(fileContent) - strlen(fileContent) - 2);
+        strncat(fileContent, "\\n", sizeof(fileContent) - strlen(fileContent) - 1); // Append escaped newline
     }
+    
     fclose(f);
 
     for (int i = 0; fileContent[i]; ++i) {
