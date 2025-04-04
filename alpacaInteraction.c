@@ -26,7 +26,9 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     } else {
         printf("(Failed to list models — is Ollama running?)\n");
     }
-    printf("\nEnter the exact name of the mode to use: ");
+
+    printf("\n");
+    printf("Enter the exact name of the mode to use: ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
 
