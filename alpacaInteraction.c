@@ -11,7 +11,7 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     char modelName[64];
     char userPrompt[MAX_CONTENT_CHAR];
     char command[MAX_CMD];
-    char buffer[512];
+    char buffer[4000];
     char fullResponse[MAX_RESPONSE] = {0};
     char filePath[2 * MAX_TITLE_CHAR + 2];
 
@@ -63,6 +63,10 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
         printf("%s", buffer);
         strncat(fullResponse, buffer, sizeof(fullResponse) - strlen(fullResponse) - 1);
     }
+
+    // Ensure null termination just in case buffer overflowed
+    fullResponse[MAX_RESPONSE - 1] = '\0';
+
     pclose(fp);
 
     FILE *history = fopen(filePath, "w");
