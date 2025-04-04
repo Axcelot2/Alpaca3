@@ -1,4 +1,4 @@
-// alpacaInteraction.c - with model list using popen()
+// alpacaInteraction.c — full version with preamble in chat history files
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,16 +19,18 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     FILE *modelList = popen("ollama list", "r");
     if (modelList) {
         char line[256];
+        int lastHadNewline = 0;
         while (fgets(line, sizeof(line), modelList)) {
-            printf("%s", line);
+            fputs(line, stdout);
+            lastHadNewline = (line[strlen(line) - 1] == '\n');
         }
+        if (!lastHadNewline) putchar('\n');
         pclose(modelList);
     } else {
         printf("(Failed to list models — is Ollama running?)\n");
     }
 
-    printf("\n");
-    printf("Enter the exact name of the mode to use: ");
+    printf("Enter the name of the model to use (e.g., mistral, llama3): ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
 
@@ -36,21 +38,18 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
         printf("No directories exist. Please create one first.\n");
         return;
     }
+
     int dirIndex;
     printf("Select a directory to save the chat file: ");
-    scanf("%d", &dirIndex);
-    getchar();
+    scanf("%d", &dirIndex); getchar();
     dirIndex--;
     if (dirIndex < 0 || dirIndex >= MAX_DIR || dirArr[dirIndex].dirTitle[0] == '\0') {
-        printf("Invalid directory selection.\n");
-        return;
+        printf("Invalid directory selection.\n"); return;
     }
 
     int fileIndex;
     for (fileIndex = 0; fileIndex < MAX_FILES; fileIndex++) {
-        if (dirArr[dirIndex].fileTitle[fileIndex][0] == '\0') {
-            break;
-        }
+        if (dirArr[dirIndex].fileTitle[fileIndex][0] == '\0') break;
     }
 
     printf("Enter the name of the file to save this conversation: ");
@@ -66,10 +65,7 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     snprintf(command, sizeof(command), "ollama run %s \"%s\"", modelName, userPrompt);
 
     FILE *fp = popen(command, "r");
-    if (!fp) {
-        perror("popen failed");
-        return;
-    }
+    if (!fp) { perror("popen failed"); return; }
 
     printf("\nResponse:\n");
     while (fgets(buffer, sizeof(buffer), fp)) {
@@ -84,16 +80,12 @@ void chatWithModelToFile(struct dirStruct dirArr[MAX_DIR]) {
     pclose(fp);
 
     FILE *history = fopen(filePath, "w");
-    if (!history) {
-        perror("Failed to open chat file");
-        return;
-    }
-    fprintf(history, "Model: %s\n", modelName);
-    fprintf(history, "User: %s\n", userPrompt);
-    fprintf(history, "Bot:  %s\n", fullResponse);
-    fprintf(history, "------------------------\n");
-    fclose(history);
+    if (!history) { perror("Failed to open chat file"); return; }
 
+    fprintf(history, "This is a chat history with an LLM I am sending it here so you can remember what we talked about in our conversation:\n\n");
+    fprintf(history, "Model: %s\nUser: %s\nBot:  %s\n------------------------\n", modelName, userPrompt, fullResponse);
+
+    fclose(history);
     printf("Conversation saved to %s.\n", filePath);
 }
 
@@ -108,13 +100,15 @@ void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
     FILE *modelList = popen("ollama list", "r");
     if (modelList) {
         char line[256];
+        int lastHadNewline = 0;
         while (fgets(line, sizeof(line), modelList)) {
-            printf("%s", line);
+            fputs(line, stdout);
+            lastHadNewline = (line[strlen(line) - 1] == '\n');
         }
+        if (!lastHadNewline) putchar('\n');
         pclose(modelList);
-    } else {
-        printf("(Failed to list models — is Ollama running?)\n");
     }
+
     printf("Enter the name of the model to use (e.g., mistral, llama3): ");
     fgets(modelName, sizeof(modelName), stdin);
     modelName[strcspn(modelName, "\n")] = 0;
@@ -123,37 +117,30 @@ void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
         printf("No directories exist. Please create one first.\n");
         return;
     }
+
     int dirIndex;
     printf("Select a directory to choose the .txt file from: ");
-    scanf("%d", &dirIndex);
-    getchar();
+    scanf("%d", &dirIndex); getchar();
     dirIndex--;
     if (dirIndex < 0 || dirIndex >= MAX_DIR || dirArr[dirIndex].dirTitle[0] == '\0') {
-        printf("Invalid directory selection.\n");
-        return;
+        printf("Invalid directory selection.\n"); return;
     }
 
     if (listFile(dirArr, dirIndex) != 0) {
-        printf("No files exist in this directory.\n");
-        return;
+        printf("No files exist in this directory.\n"); return;
     }
+
     int fileIndex;
     printf("Select a file to upload: ");
-    scanf("%d", &fileIndex);
-    getchar();
+    scanf("%d", &fileIndex); getchar();
     fileIndex--;
     if (fileIndex < 0 || fileIndex >= MAX_FILES || dirArr[dirIndex].fileTitle[fileIndex][0] == '\0') {
-        printf("Invalid file selection.\n");
-        return;
+        printf("Invalid file selection.\n"); return;
     }
 
     snprintf(filePath, sizeof(filePath), "%s/%s", dirArr[dirIndex].dirTitle, dirArr[dirIndex].fileTitle[fileIndex]);
-
     FILE *f = fopen(filePath, "r");
-    if (!f) {
-        perror("Failed to open file");
-        return;
-    }
+    if (!f) { perror("Failed to open file"); return; }
 
     while (fgets(buffer, sizeof(buffer), f)) {
         strncat(fileContent, buffer, sizeof(fileContent) - strlen(fileContent) - 1);
@@ -161,19 +148,18 @@ void uploadFileToOllama(struct dirStruct dirArr[MAX_DIR]) {
     fclose(f);
 
     for (int i = 0; fileContent[i]; ++i) {
-        if (fileContent[i] == '\n') {
-            fileContent[i] = ' ';
-        }
-    }
+    if (fileContent[i] == '"') fileContent[i] = '\'';
+    if (fileContent[i] == '`') fileContent[i] = ' ';
+}
+
+    size_t len = strlen(fileContent);
+    if (len > 0 && fileContent[len - 1] == '\n') fileContent[len - 1] = '\0';
 
     snprintf(command, sizeof(command), "ollama run %s \"%s\"", modelName, fileContent);
     printf("\nUsing file: %s\n\n", filePath);
 
     FILE *fp = popen(command, "r");
-    if (!fp) {
-        perror("popen failed");
-        return;
-    }
+    if (!fp) { perror("popen failed"); return; }
 
     printf("\nOllama response:\n");
     while (fgets(buffer, sizeof(buffer), fp)) {
